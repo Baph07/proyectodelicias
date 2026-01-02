@@ -5,9 +5,29 @@ body {
 }
 
 header {
-    background-color: #110ecc;
+    background-color: rgb(89, 78, 248);
     color: #ffffff;
     padding: 15px;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* título izquierda, logo derecha */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 40px;
+}
+
+header .logo {
+    height: 100px; /* ajusta a tu gusto */
+    width: auto;
+}
+
+nav {
+    margin-top: 10px; /* separa la barra de navegación del título/logo */
 }
 
 nav a {
@@ -16,6 +36,7 @@ nav a {
     text-decoration: none;
     font-weight: bold;
 }
+
 
 main {
     padding: 20px;

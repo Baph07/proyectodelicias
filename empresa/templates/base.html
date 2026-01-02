@@ -9,13 +9,17 @@
 <body>
 
 <header>
-    <h1>Delicias Yura</h1>
+    <div class="header-top">
+        <h1>Delicias Yura</h1>
+        <img src="{% static 'images/logo.svg' %}" alt="Logo Delicias Yura" class="logo">
+    </div>
     <nav>
         <a href="/inventario/">Inventario</a>
         <a href="/ingresos/">Ingresos</a>
         <a href="/egresos/">Egresos</a>
     </nav>
 </header>
+
 
 <main>
     {% block content %}{% endblock %}
