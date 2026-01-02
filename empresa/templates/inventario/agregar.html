@@ -1,0 +1,74 @@
+<!-- empresa/templates/inventario/agregar.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Agregar Producto</h2>
+
+<!-- =================== PASO 1: Seleccionar Categoría =================== -->
+{% if paso == 1 %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Siguiente</button>
+</form>
+
+<!-- =================== PASO 2: Seleccionar Tipo de Postre =================== -->
+{% elif paso == 2 %}
+{% if categoria == "postres" %}
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label for="tipo_postre">Selecciona el tipo de postre:</label>
+        <select name="tipo_postre" id="tipo_postre">
+            <option value="">--Seleccione--</option>
+            {% for val, text in tipos %}
+            <option value="{{ val }}">{{ text }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit">Siguiente</button>
+</form>
+{% else %}
+<!-- Para Helados u Otros, redirige al paso 3 automáticamente -->
+<p>Cargando formulario...</p>
+{% endif %}
+
+<!-- =================== PASO 3: Producto, Tamaño, Sabor, Cantidad =================== -->
+{% elif paso == 3 %}
+<form method="post">
+    {% csrf_token %}
+
+    <!-- Nombre -->
+    <div>
+        {{ form.nombre.label_tag }}
+        {{ form.nombre }}
+    </div>
+
+    <!-- Tamaño -->
+    {% if form.tamaño.field.choices %}
+    <div>
+        {{ form.tamaño.label_tag }}
+        {{ form.tamaño }}
+    </div>
+    {% endif %}
+
+    <!-- Sabor -->
+    {% if form.sabor.field.choices %}
+    <div>
+        {{ form.sabor.label_tag }}
+        {{ form.sabor }}
+    </div>
+    {% endif %}
+
+    <!-- Cantidad -->
+    <div>
+        {{ form.cantidad.label_tag }}
+        {{ form.cantidad }}
+    </div>
+
+    <button type="submit">Agregar Producto</button>
+</form>
+{% endif %}
+
+{% endblock %}
