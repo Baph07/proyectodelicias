@@ -1,34 +1,63 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Inventario</h2>
+<h2 class="title">Inventario</h2>
 
-<a href="{% url 'agregar_producto' %}">
-    <button>Añadir producto</button>
-</a>
+<!-- TARJETAS SUPERIORES -->
+<div class="cards">
+    <div class="card">
+        <h3>Productos</h3>
+        <p>{{ productos|length }}</p>
+    </div>
 
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Nombre</th>
-        <th>Tamaño</th>
-        <th>Sabor</th>
-        <th>Categoría</th>
-        <th>Precio</th>
-        <th>Stock</th>
-    </tr>
-    {% for p in productos %}
-    <tr>
-        <td>{{ p.nombre }}</td>
-        <td>{{ p.tamaño|default:"-" }}</td>
-        <td>{{ p.sabor|default:"-" }}</td>
-        <td>{{ p.get_categoria_display }}</td>
-        <td>${{ p.precio }}</td>
-        <td>{{ p.stock }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No hay productos registrados</td>
-    </tr>
-    {% endfor %}
+    <div class="card">
+        <h3>En existencia</h3>
+        <p>
+            {% for p in productos %}
+                {% if forloop.last %}{{ forloop.counter }}{% endif %}
+            {% endfor %}
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Categorías</h3>
+        <p>3</p>
+    </div>
+</div>
+
+<!-- BOTÓN -->
+<div class="actions">
+    <a href="{% url 'agregar_producto' %}" class="btn">+ Añadir producto</a>
+</div>
+
+<!-- TABLA -->
+<div class="table-card">
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Tamaño</th>
+            <th>Sabor</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in productos %}
+        <tr>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.tamaño|default:"-" }}</td>
+            <td>{{ p.sabor|default:"-" }}</td>
+            <td>{{ p.get_categoria_display }}</td>
+            <td class="stock">{{ p.stock }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No hay productos registrados</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
+</div>
+
 {% endblock %}
