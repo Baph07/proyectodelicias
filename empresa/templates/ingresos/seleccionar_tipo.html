@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Seleccionar Tipo de Venta</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" name="tipo_venta" value="contado" class="btn-primary">Pago de Contado</button>
+    <button type="submit" name="tipo_venta" value="pendiente" class="btn-primary">Pago Pendiente</button>
+</form>
+{% endblock %}

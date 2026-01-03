@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Ventas Diarias</h2>
+<table>
+    <tr>
+        <th>Cliente</th>
+        <th>Productos</th>
+        <th>Total</th>
+        <th>Fecha</th>
+        <th>Método de Pago</th>
+    </tr>
+    {% for venta in ventas %}
+    <tr>
+        <td>{{ venta.cliente.nombre }}</td>
+        <td>
+            <ul>
+            {% for d in venta.detalleventa_set.all %}
+                <li>{{ d.cantidad }} x {{ d.producto.nombre }} {% if d.tamaño %}- {{ d.tamaño }}{% endif %} {% if d.sabor %}- {{ d.sabor }}{% endif %} - {{ d.precio_unitario }}</li>
+            {% endfor %}
+            </ul>
+        </td>
+        <td>{{ venta.total }}</td>
+        <td>{{ venta.fecha }}</td>
+        <td>{{ venta.metodo_pago|default:"Pendiente" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

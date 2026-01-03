@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Ingresar Venta</h2>
+
+<div class="card">
+    <h3>Datos del Cliente</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ cliente_form.as_p }}
+        <button type="submit" name="paso_cliente" class="btn-primary">Siguiente</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Agregar Productos</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ producto_form.as_p }}
+        <button type="submit" name="agregar_producto" class="btn-primary">Agregar Producto</button>
+    </form>
+
+    {% if productos_tmp %}
+        <h4>Productos en la venta:</h4>
+        <ul>
+        {% for p in productos_tmp %}
+            <li>{{ p.categoria }} - {{ p.nombre }} {% if p.tamaño %}- {{ p.tamaño }}{% endif %} {% if p.sabor %}- {{ p.sabor }}{% endif %} x{{ p.cantidad }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Pago</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ venta_form.as_p }}
+        <button type="submit" name="finalizar_venta" class="btn-primary">Finalizar Venta</button>
+    </form>
+</div>
+{% endblock %}

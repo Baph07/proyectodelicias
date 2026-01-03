@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Agregar Productos a la Venta {% if venta.pago_contado %}(Contado){% else %}(Pendiente){% endif %}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ producto_form.as_p }}
+    <button type="submit" name="agregar_producto" class="btn-primary">Agregar Producto</button>
+    <button type="submit" name="finalizar_venta" class="btn-primary">Finalizar Venta</button>
+</form>
+
+{% if detalles %}
+<h3>Productos en esta venta:</h3>
+<ul>
+    {% for d in detalles %}
+    <li>{{ d.cantidad }} x {{ d.producto.nombre }} {% if d.tamaño %}- {{ d.tamaño }}{% endif %} {% if d.sabor %}- {{ d.sabor }}{% endif %} - {{ d.precio_unitario }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
