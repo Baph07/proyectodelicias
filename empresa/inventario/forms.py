@@ -13,7 +13,9 @@ class CategoriaForm(forms.Form):
     categoria = forms.ChoiceField(
         choices=CATEGORIA_CHOICES,
         label="Categoría",
-        widget=forms.Select(attrs={'class': 'form-select'})
+        widget=forms.Select(attrs={
+            'class': 'input no-move'  # ahora es compacto y estático
+        })
     )
 
 # ===============================

@@ -1,141 +1,297 @@
+/* ================= GLOBAL ================= */
 body {
     font-family: Arial, sans-serif;
     background-color: #f5f7fa;
     margin: 0;
+    color: #333;
+    font-size: 20px;
 }
 
+/* ================= HEADER RESPONSIVE ================= */
 header {
     background-color: rgb(89, 78, 248);
     color: #ffffff;
-    padding: 15px;
+    padding: 15px 20px;
+    display: flex;
+    flex-wrap: wrap; /* permite que elementos bajen de línea si es necesario */
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
 }
 
+/* Contenedor del título y logo */
 .header-top {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* título izquierda, logo derecha */
+    justify-content: space-between;
+    width: 100%;
 }
 
+/* Título */
 header h1 {
     margin: 0;
-    font-size: 40px;
+    font-size: 40px; /* tamaño inicial grande */
+    font-weight: 700;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    white-space: nowrap; /* evita que se divida */
 }
 
+/* Logo */
 header .logo {
-    height: 100px; /* ajusta a tu gusto */
+    height: 110px;
     width: auto;
+    border-radius: 20px;
+    transition: transform 0.3s ease;
 }
 
+/* Hover del logo */
+header .logo:hover {
+    transform: scale(1.05); /* pequeño zoom al pasar mouse */
+}
+
+/* ================= NAV / BARRA DE ESTADO RESPONSIVE ================= */
 nav {
-    margin-top: 10px; /* separa la barra de navegación del título/logo */
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap; /* permite que los links bajen de línea si hace falta */
+    align-items: center;
+    gap: 10px; /* espacio entre elementos */
 }
 
-nav a {
+nav a, .user-greeting {
     color: white;
-    margin-right: 15px;
     text-decoration: none;
     font-weight: bold;
+    font-size: 20px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+    white-space: nowrap; /* evita que los links se corten */
 }
 
+/* Hover: levanta y da brillo sutil */
+nav a:hover, .user-greeting:hover {
+    background-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
+/* Click: presionado */
+nav a:active, .user-greeting:active {
+    transform: translateY(0) scale(0.98);
+    background-color: rgba(255,255,255,0.15);
+}
+
+/* ================= MEDIA QUERY PARA MOVIL ================= */
+@media (max-width: 768px) {
+    nav {
+        justify-content: center; /* centra los links en móvil */
+        gap: 8px;
+    }
+    
+    nav a, .user-greeting {
+        font-size: 20px;
+        padding: 5px 10px;
+    }
+}
+
+/* ================= MAIN ================= */
 main {
-    padding: 20px;
+    padding: 25px;
 }
 
-/* TITULO */
+/* ================= TITULOS ================= */
 .title {
-    color: rgb(224, 113, 113);
+    color: #e91e63;
     margin-bottom: 20px;
+    font-size: 32px;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.15);
 }
 
-/* TARJETAS */
+/* ================= TARJETAS DASHBOARD ================= */
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 20px;
     margin-bottom: 25px;
 }
 
-.card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,.15);
+.card, .auth-card, .home-card, .form-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 50px 35px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover, .home-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
+.card-title, .auth-card h2, .home-card h2, .form-card h2 {
+    font-size: 25px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #5950f8;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.1);
 }
 
 .card h3 {
     margin: 0;
     color: #666;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: center;
 }
 
 .card p {
-    font-size: 32px;
-    font-weight: bold;
-    margin-top: 10px;
+    font-size: 45px;
+    font-weight: 700;
+    margin-top: 12px;
     color: #e91e63;
+    text-align: center;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, color 0.3s ease;
 }
 
-/* BOTÓN */
-.actions {
-    margin-bottom: 20px;
+.card:hover p {
+    transform: scale(1.1);
+    color: #ff4081;
 }
 
-.btn {
-    background: #e91e63;
+/* ================= BOTONES ================= */
+.btn, .btn-primary {
+    background-color: #2563eb;
     color: white;
-    padding: 10px 18px;
+    padding: 10px 20px;
     border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 20px;
+    cursor: pointer;
     text-decoration: none;
-    font-weight: bold;
+    width: fit-content;
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 
-/* TABLA */
+.btn:hover, .btn-primary:hover {
+    background-color: #1e40af;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.btn:active, .btn-primary:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* ================= TEXTOS ESTÁTICOS ================= */
+.no-move {
+    transition: none !important;
+    transform: none !important;
+    text-shadow: none !important;
+    color: inherit;
+    font-size: 20px;
+}
+
+/* ================= TABLAS ================= */
 .table-card {
     background: white;
     border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    overflow-x: auto;
+    transition: all 0.35s ease;
 }
 
+/* Elevación suave al pasar el mouse */
+.table-card:hover {
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+}
+
+/* ================= TABLA ================= */
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 20px;
 }
 
-th {
-    background: #f2f2f2;
-    padding: 12px;
+/* Cabecera */
+thead th {
+    background: linear-gradient(135deg, #5950f8, #7b6cff);
+    color: white;
+    padding: 16px;
     text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
+/* Bordes redondeados solo arriba */
+thead th:first-child {
+    border-top-left-radius: 12px;
+}
+thead th:last-child {
+    border-top-right-radius: 12px;
+}
+
+/* Filas */
+tbody tr {
+    transition: all 0.25s ease;
+}
+
+/* Efecto hover por fila */
+tbody tr:hover {
+    background-color: #f4f6ff;
+    transform: scale(1.01);
+}
+
+/* Celdas */
 td {
-    padding: 10px;
+    padding: 14px 16px;
     border-bottom: 1px solid #eee;
+    color: #333;
 }
 
+/* Última fila sin borde */
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ================= STOCK ================= */
 .stock {
     font-weight: bold;
-    color: #1e88e5;
+    color: #2563eb;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
-/* ================= DASHBOARD FORMS ================= */
-
-.card {
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    max-width: 700px;
-    margin: 0 auto;
+/* Pequeña animación al pasar mouse */
+tbody tr:hover .stock {
+    transform: scale(1.15);
+    color: #e91e63;
 }
 
-.card-title {
-    margin-bottom: 20px;
-    font-size: 22px;
-    font-weight: 600;
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    table {
+        font-size: 16px;
+    }
+
+    th, td {
+        padding: 12px;
+    }
 }
 
+
+/* ================= FORMULARIOS ================= */
 .form {
     display: flex;
     flex-direction: column;
@@ -148,38 +304,94 @@ td {
     gap: 6px;
 }
 
-.input,
-select,
-input[type="number"] {
-    padding: 10px;
+.input, select, input[type="number"] {
+    padding: 10px 14px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    font-size: 14px;
+    font-size: 20px;
+    width: 100%;
+    max-width: 260px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
+.input:focus, select:focus, input[type="number"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
+    outline: none;
+}
+
+/* GRID 2 COLUMNAS */
 .grid-2 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
 }
 
-.btn-primary {
-    background-color: #2563eb;
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 15px;
+.form-group label {
     font-weight: 500;
+    font-size: 20px;
+    color: #333;
 }
 
-.btn-primary:hover {
-    background-color: #1e40af;
+/* ================= FORM CARD CENTRADA ================= */
+.form-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    max-width: 420px;  /* ancho máximo */
+    width: auto;       /* se adapta al contenido */
+    display: inline-block;
+    margin: 0 auto;    /* centrado horizontal */
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    text-align: left;
+}
+/* Contenedor que centra */
+.form-container {
+    display: flex;
+    justify-content: center; /* horizontal */
+    align-items: flex-start; /* vertical desde arriba */
+    min-height: 60vh;        /* altura mínima de la pantalla */
+    padding: 20px;
 }
 
-.loading {
-    color: #555;
-    font-style: italic;
+/* ================= LOGIN / REGISTRO ================= */
+.auth-card {
+    max-width: 380px;
+    margin: 40px auto;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.auth-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+}
+
+.auth-card p {
+    font-size: 20px;
+    margin-top: 12px;
+}
+
+.auth-card a {
+    color: #2563eb;
+    font-weight: bold;
+}
+
+/* ================= HOME ================= */
+.home-card {
+    max-width: 480px;
+    margin: 40px auto;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+}
+
+.home-card p {
+    font-size: 20px;
+    margin-bottom: 16px;
+}
