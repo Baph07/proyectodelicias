@@ -24,12 +24,20 @@
         </div>
         <div class="form-group">
             <label>Contraseña</label>
-            <input type="password" name="password1" class="input" required>
+            <div class="password-wrapper">
+                <input type="password" name="password1" id="password1" class="input" required>
+                <span class="toggle-password" onclick="togglePassword('password1')">👀</span>
+            </div>
         </div>
+        
         <div class="form-group">
             <label>Confirmar contraseña</label>
-            <input type="password" name="password2" class="input" required>
+            <div class="password-wrapper">
+                <input type="password" name="password2" id="password2" class="input" required>
+                <span class="toggle-password" onclick="togglePassword('password2')">👀</span>
+            </div>
         </div>
+        
         <button type="submit" class="btn-primary">Registrarse</button>
     </form>
 
