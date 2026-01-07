@@ -1,0 +1,9 @@
+# Archivos compilados de Python
+__pycache__/
+*.pyc
+
+# Base de datos SQLite local
+db.sqlite3
+
+# Entornos virtuales
+venv/
