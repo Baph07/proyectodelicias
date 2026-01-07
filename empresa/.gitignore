@@ -1,9 +1,9 @@
-# Archivos compilados de Python
-__pycache__/
-*.pyc
+# Python cache
+**/__pycache__/
+*.py[cod]
 
-# Base de datos SQLite local
+# Database
 db.sqlite3
 
-# Entornos virtuales
+# Virtual environment
 venv/
