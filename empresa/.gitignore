@@ -1,9 +1,9 @@
-# Python cache
-**/__pycache__/
-*.py[cod]
+# Bytecode de Python
+*.pyc
+__pycache__/
 
-# Database
+# Base de datos
 db.sqlite3
 
-# Virtual environment
+# Entorno virtual
 venv/
