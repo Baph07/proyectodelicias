@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'inventario',
     'ingresos',
     'egresos',
+    'cuentas',
 ]
 
 MIDDLEWARE = [
@@ -120,3 +121,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+LOGIN_URL = '/cuentas/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/cuentas/login/'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

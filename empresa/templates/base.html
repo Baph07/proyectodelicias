@@ -10,20 +10,34 @@
 
 <header>
     <div class="header-top">
-        <h1>Delicias Yura</h1>
+        <h1> 🍨 Delicias Yura</h1>
         <img src="{% static 'images/logo.svg' %}" alt="Logo Delicias Yura" class="logo">
     </div>
     <nav>
-        <a href="/inventario/">Inventario</a>
-        <a href="/ingresos/">Ingresos</a>
-        <a href="/egresos/">Egresos</a>
+        {% if user.is_authenticated %}
+            <span>Hola, {{ user.username }} 💖</span>
+            <a href="/inventario/">Inventario</a>
+            <a href="/ingresos/">Ingresos</a>
+            <a href="/egresos/">Egresos</a>
+            <a href="{% url 'logout' %}">Cerrar sesión</a>
+        {% else %}
+            <a href="{% url 'login' %}">Iniciar sesión</a>
+            <a href="{% url 'registro' %}">Registrarse</a>
+        {% endif %}
     </nav>
+    
 </header>
 
 
 <main>
     {% block content %}{% endblock %}
 </main>
-
+<script>
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === "password" ? "text" : "password";
+    }
+    </script>
+    
 </body>
 </html>

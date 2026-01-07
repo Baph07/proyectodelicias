@@ -3,7 +3,11 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 from .models import Producto
 from .forms import CategoriaForm, ProductoForm
+from django.contrib.auth.decorators import login_required
 
+@login_required
+def home(request):
+    return render(request, 'home.html')
 # Diccionarios de productos y precios
 PRODUCTOS = {
     'helados': {
@@ -42,6 +46,7 @@ PRECIOS = {
 # ===============================
 # LISTA DE INVENTARIO
 # ===============================
+@login_required
 def lista_productos(request):
     productos = Producto.objects.all()
     return render(request, 'inventario/lista.html', {'productos': productos})
@@ -49,6 +54,7 @@ def lista_productos(request):
 # ===============================
 # AGREGAR PRODUCTO MULTI-STEP
 # ===============================
+@login_required
 def agregar_producto(request):
     paso = int(request.GET.get('paso', 1))
     categoria = request.GET.get('categoria')

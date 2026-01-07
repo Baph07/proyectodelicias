@@ -1,0 +1,9 @@
+# Bytecode de Python
+*.pyc
+__pycache__/
+
+# Base de datos
+db.sqlite3
+
+# Entorno virtual
+venv/

@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django / local
+db.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.swp
+*.sqlite3

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-card">
+    <h2>Crear cuenta</h2>
+
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" name="username" class="input" required>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" class="input" required>
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <div class="password-wrapper">
+                <input type="password" name="password1" id="password1" class="input" required>
+                <span class="toggle-password" onclick="togglePassword('password1')">👀</span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Confirmar contraseña</label>
+            <div class="password-wrapper">
+                <input type="password" name="password2" id="password2" class="input" required>
+                <span class="toggle-password" onclick="togglePassword('password2')">👀</span>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn-primary">Registrarse</button>
+    </form>
+
+    <p>¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a></p>
+</div>
+{% endblock %}
