@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="table-card">
+    <h2>{{ titulo }} 💖</h2>
+    <p>Fecha del reporte: {{ fecha_actual }}</p>
+
+    {% for venta in ventas %}
+        <div class="card" style="margin-bottom: 15px;">
+            <h3>Venta #{{ forloop.counter }} ({{ venta.fecha|date:"d/m/Y H:i" }})</h3>
+            <ul>
+                {% for producto in venta.productos.all %}
+                    <li>{{ producto.cantidad }} x {{ producto.tipo_helado }} 
+                        ({{ producto.sabor1 }}{% if producto.sabor2 %}, {{ producto.sabor2 }}{% endif %})
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p>No hay ventas registradas en este periodo.</p>
+    {% endfor %}
+</div>
+{% endblock %}

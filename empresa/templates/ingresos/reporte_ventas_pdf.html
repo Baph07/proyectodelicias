@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Ventas PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 20px;
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #ddd;
+        }
+        ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Reporte de Ventas</h2>
+    <h3>
+        {% if tipo == 'diaria' %}
+            Ventas del Día: {{ fecha_actual }}
+        {% elif tipo == 'semanal' %}
+            Ventas de la Semana: {{ fecha_inicio }} - {{ fecha_fin }}
+        {% endif %}
+    </h3>
+
+    {% for venta in ventas %}
+        <h4>Venta #{{ forloop.counter }} - Fecha: {{ venta.fecha|date:"d/m/Y H:i" }}</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Sabor 1</th>
+                    <th>Sabor 2</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in venta.productos.all %}
+                <tr>
+                    <td>{{ producto.tipo_helado }}</td>
+                    <td>{{ producto.categoria }}</td>
+                    <td>{{ producto.sabor1 }}</td>
+                    <td>{% if producto.sabor2 %}{{ producto.sabor2 }}{% else %}-{% endif %}</td>
+                    <td>{{ producto.cantidad }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+    {% empty %}
+        <p>No hay ventas registradas.</p>
+    {% endfor %}
+</body>
+</html>

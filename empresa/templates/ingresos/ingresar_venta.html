@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>Ingresar Venta</h2>
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Selección de Categoría -->
+            <div class="form-group">
+                <label for="categoria">Categoría</label>
+                <select name="categoria" id="categoria" class="input" onchange="this.form.submit()">
+                    <option value="">-- Selecciona categoría --</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat }}" {% if request.POST.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if request.POST.categoria == 'Helados' %}
+                <div class="form-group">
+                    <label for="tipo_helado">Tipo de Helado</label>
+                    <select name="tipo_helado" class="input" onchange="this.form.submit()">
+                        <option value="">-- Selecciona tipo --</option>
+                        {% for tipo in tipos_helados %}
+                            <option value="{{ tipo }}" {% if request.POST.tipo_helado == tipo %}selected{% endif %}>{{ tipo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sabor1">Sabor 1</label>
+                    <select name="sabor1" class="input">
+                        <option value="">-- Selecciona sabor --</option>
+                        {% for sabor in sabores %}
+                            <option value="{{ sabor }}" {% if request.POST.sabor1 == sabor %}selected{% endif %}>{{ sabor }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if request.POST.tipo_helado in doble_sabor %}
+                <div class="form-group">
+                    <label for="sabor2">Sabor 2</label>
+                    <select name="sabor2" class="input">
+                        <option value="">-- Selecciona sabor --</option>
+                        {% for sabor in sabores %}
+                            <option value="{{ sabor }}" {% if request.POST.sabor2 == sabor %}selected{% endif %}>{{ sabor }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" name="cantidad" min="1" value="1" class="input">
+                </div>
+            {% endif %}
+
+            <button type="submit" name="agregar_producto" class="btn btn-primary">Agregar Producto</button>
+            {% if venta_temp %}
+                <button type="submit" name="registrar_venta" class="btn btn-success">Registrar Venta</button>
+            {% endif %}
+        </form>
+
+        {% if venta_temp %}
+        <h3>Productos agregados:</h3>
+        <ul>
+            {% for p in venta_temp %}
+                <li>
+                    {{ p.cantidad }} x {{ p.tipo_helado }} ({{ p.sabor1 }}{% if p.sabor2 %}, {{ p.sabor2 }}{% endif %})
+                </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

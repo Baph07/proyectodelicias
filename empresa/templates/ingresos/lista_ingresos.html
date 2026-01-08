@@ -3,6 +3,38 @@
 {% block content %}
 <div class="table-card">
     <h2>Ingresos 💖</h2>
-    <p>Aquí vamos a ver los ingresos bien bonitos ji ✨</p>
+    <p>Aquí vamos a ver los ingresos bien bonitos jija ✨</p>
+
+    <!-- Botón para ingresar venta -->
+    <a href="{% url 'ingresar_venta' %}" class="btn">Ingresar Venta</a>
+
+    <!-- Filtros de reporte -->
+    <div style="margin-top: 20px;">
+        <a href="{% url 'reporte_ventas' 'diaria' %}" class="btn btn-primary">Reporte Diario PDF</a>
+        <a href="{% url 'reporte_ventas' 'semanal' %}" class="btn btn-primary">Reporte Semanal PDF</a>
+    </div>
+
+    <!-- Lista de ventas -->
+    <h3 class="title" style="margin-top: 30px;">Ventas Registradas</h3>
+    {% if ventas %}
+        {% for venta in ventas %}
+            <div class="card" style="margin-bottom: 15px;">
+                <h3>
+                    Venta #{{ forloop.counter }} 
+                    - Fecha: {{ venta.fecha|date:"d/m/Y H:i" }}
+                </h3>
+                <ul>
+                    {% for producto in venta.productos.all %}
+                        <li>
+                            {{ producto.cantidad }} x {{ producto.tipo_helado }} 
+                            ({{ producto.sabor1 }}{% if producto.sabor2 %}, {{ producto.sabor2 }}{% endif %})
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay ventas registradas todavía.</p>
+    {% endif %}
 </div>
 {% endblock %}
