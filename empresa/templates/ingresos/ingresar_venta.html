@@ -13,18 +13,19 @@
                 <select name="categoria" id="categoria" class="input" onchange="this.form.submit()">
                     <option value="">-- Selecciona categoría --</option>
                     {% for cat in categorias %}
-                        <option value="{{ cat }}" {% if request.POST.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                        <option value="{{ cat }}" {% if categoria_seleccionada == cat %}selected{% endif %}>{{ cat }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            {% if request.POST.categoria == 'Helados' %}
+            <!-- ===== HELADOS ===== -->
+            {% if categoria_seleccionada == 'Helados' %}
                 <div class="form-group">
                     <label for="tipo_helado">Tipo de Helado</label>
                     <select name="tipo_helado" class="input" onchange="this.form.submit()">
                         <option value="">-- Selecciona tipo --</option>
                         {% for tipo in tipos_helados %}
-                            <option value="{{ tipo }}" {% if request.POST.tipo_helado == tipo %}selected{% endif %}>{{ tipo }}</option>
+                            <option value="{{ tipo }}" {% if tipo_helado_seleccionado == tipo %}selected{% endif %}>{{ tipo }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -34,22 +35,85 @@
                     <select name="sabor1" class="input">
                         <option value="">-- Selecciona sabor --</option>
                         {% for sabor in sabores %}
-                            <option value="{{ sabor }}" {% if request.POST.sabor1 == sabor %}selected{% endif %}>{{ sabor }}</option>
+                            <option value="{{ sabor }}">{{ sabor }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                {% if request.POST.tipo_helado in doble_sabor %}
+                {% if tipo_helado_seleccionado in doble_sabor %}
                 <div class="form-group">
                     <label for="sabor2">Sabor 2</label>
                     <select name="sabor2" class="input">
                         <option value="">-- Selecciona sabor --</option>
                         {% for sabor in sabores %}
-                            <option value="{{ sabor }}" {% if request.POST.sabor2 == sabor %}selected{% endif %}>{{ sabor }}</option>
+                            <option value="{{ sabor }}">{{ sabor }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 {% endif %}
+
+                <div class="form-group">
+                    <label for="cantidad">Cantidad</label>
+                    <input type="number" name="cantidad" min="1" value="1" class="input">
+                </div>
+            {% endif %}
+
+            <!-- ===== POSTRES ===== -->
+            {% if categoria_seleccionada == 'Postres' %}
+    <!-- Seleccionar tipo de postre -->
+    <div class="form-group">
+        <label for="tipo_postre">Tipo de Postre</label>
+        <select name="tipo_postre" class="input" onchange="this.form.submit()">
+            <option value="">-- Selecciona tipo --</option>
+            {% for tipo in postres.keys %}
+                <option value="{{ tipo }}" {% if postre_seleccionado == tipo %}selected{% endif %}>{{ tipo }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if postre_seleccionado %}
+        <!-- Seleccionar tamaño -->
+        <div class="form-group">
+            <label for="tamaño">Tamaño</label>
+            <select name="tamaño" class="input">
+                <option value="">-- Selecciona tamaño --</option>
+                {% for tam in tamaños_postre %}
+                    <option value="{{ tam }}" {% if request.POST.tamaño == tam %}selected{% endif %}>{{ tam }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Seleccionar sabor si aplica -->
+        {% if sabores_postre %}
+        <div class="form-group">
+            <label for="sabor1">Sabor</label>
+            <select name="sabor1" class="input">
+                <option value="">-- Selecciona sabor --</option>
+                {% for s in sabores_postre %}
+                    <option value="{{ s }}" {% if request.POST.sabor1 == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="cantidad">Cantidad</label>
+            <input type="number" name="cantidad" min="1" value="1" class="input">
+        </div>
+    {% endif %}
+{% endif %}
+
+            <!-- ===== OTROS ===== -->
+            {% if categoria_seleccionada == 'Otros' %}
+                <div class="form-group">
+                    <label for="nombre">Producto</label>
+                    <select name="nombre" class="input">
+                        <option value="">-- Selecciona producto --</option>
+                        {% for p in otros %}
+                            <option value="{{ p }}" {% if request.POST.nombre == p %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
                 <div class="form-group">
                     <label for="cantidad">Cantidad</label>
@@ -68,7 +132,13 @@
         <ul>
             {% for p in venta_temp %}
                 <li>
-                    {{ p.cantidad }} x {{ p.tipo_helado }} ({{ p.sabor1 }}{% if p.sabor2 %}, {{ p.sabor2 }}{% endif %})
+                    {% if p.categoria == 'Helados' %}
+                        {{ p.cantidad }} x {{ p.tipo_helado }} ({{ p.sabor1 }}{% if p.sabor2 %}, {{ p.sabor2 }}{% endif %})
+                    {% elif p.categoria == 'Postres' %}
+                        {{ p.cantidad }} x {{ p.tipo_postre }} {% if p.tamaño %}({{ p.tamaño }}){% endif %} {% if p.sabor1 %}- {{ p.sabor1 }}{% endif %}
+                    {% else %}
+                        {{ p.cantidad }} x {{ p.nombre }}
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>

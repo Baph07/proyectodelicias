@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-card">
+    <h2>Tipo de Venta</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button name="tipo_venta" value="contado" class="btn btn-success">
+            Venta de Contado
+        </button>
+
+        <button name="tipo_venta" value="credito" class="btn btn-warning">
+            Venta a Crédito
+        </button>
+    </form>
+</div>
+{% endblock %}

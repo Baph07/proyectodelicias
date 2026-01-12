@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="table-card">
+    <h2>Reporte de Deudores 💳</h2>
+
+    {% for venta in ventas %}
+        <div class="card">
+            <h3>Venta #{{ venta.id }}</h3>
+            <p>Fecha: {{ venta.fecha|date:"d/m/Y H:i" }}</p>
+
+            <ul>
+                {% for producto in venta.productos.all %}
+                    <li>
+                        {{ producto.cantidad }} x
+                        {% if producto.categoria == 'Helados' %}
+                            {{ producto.tipo_helado }} ({{ producto.sabor1 }}{% if producto.sabor2 %}, {{ producto.sabor2 }}{% endif %})
+                        {% elif producto.categoria == 'Postres' %}
+                            {{ producto.tipo_postre }} {% if producto.tamaño %}({{ producto.tamaño }}){% endif %} {% if producto.sabor1 %}({{ producto.sabor1 }}){% endif %}
+                        {% elif producto.categoria == 'Otros' %}
+                            {{ producto.nombre }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p>No hay ventas a crédito registradas.</p>
+    {% endfor %}
+</div>
+{% endblock %}
