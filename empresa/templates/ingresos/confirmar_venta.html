@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        {% if mensaje_tipo == 'deuda' %}
+            <h2>💳 Deuda pagada exitosamente</h2>
+        {% else %}
+            <h2>✅ Venta registrada exitosamente</h2>
+        {% endif %}
+
+        <p>
+            {% if mensaje_tipo == 'deuda' %}
+                {% if total_bs %}
+                    Deuda de <strong>{{ total_bs }} Bs</strong> pagada exitosamente.
+                {% else %}
+                    Deuda de <strong>{{ venta.total }} $</strong> pagada exitosamente.
+                {% endif %}
+            {% else %}
+                {% if total_bs %}
+                    Venta de <strong>{{ total_bs }} Bs</strong> registrada.
+                {% else %}
+                    Venta de <strong>{{ venta.total }} $</strong> en efectivo registrada.
+                {% endif %}
+            {% endif %}
+        </p>
+
+        <form method="get" action="{% url 'ingresos' %}">
+            <button type="submit" class="btn btn-primary">Continuar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

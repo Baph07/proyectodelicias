@@ -16,13 +16,34 @@
                         {% if producto.categoria == 'Helados' %}
                             {{ producto.tipo_helado }} ({{ producto.sabor1 }}{% if producto.sabor2 %}, {{ producto.sabor2 }}{% endif %})
                         {% elif producto.categoria == 'Postres' %}
-                            {{ producto.tipo_postre }} {% if producto.tamaño %}({{ producto.tamaño }}){% endif %} {% if producto.sabor1 %}({{ producto.sabor1 }}){% endif %}
+                            {{ producto.tipo_postre }}
+                            {% if producto.tamaño %} ({{ producto.tamaño }}){% endif %}
+                            {% if producto.sabor1 %} ({{ producto.sabor1 }}){% endif %}
                         {% elif producto.categoria == 'Otros' %}
                             {{ producto.nombre }}
                         {% endif %}
+
+                        — ${{ producto.precio_unitario }} c/u
+                        → <strong>${{ producto.subtotal }}</strong>
                     </li>
                 {% endfor %}
             </ul>
+
+            <p><strong>Total:</strong> ${{ venta.total }}</p>
+
+            {% if venta.total_bs %}
+                <p><strong>Total en Bs:</strong> {{ venta.total_bs }}</p>
+            {% endif %}
+
+            {% if venta.metodo_pago %}
+                <p><strong>Método de pago:</strong> {{ venta.metodo_pago }}</p>
+            {% else %}
+                <!-- BOTÓN PAGAR DEUDA -->
+                <form method="GET" action="{% url 'pagar_deuda' venta.id %}">
+                    <button type="submit" class="btn btn-success">Pagar Deuda</button>
+                </form>
+            {% endif %}
+
         </div>
     {% empty %}
         <p>No hay ventas a crédito registradas.</p>

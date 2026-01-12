@@ -60,48 +60,45 @@
 
             <!-- ===== POSTRES ===== -->
             {% if categoria_seleccionada == 'Postres' %}
-    <!-- Seleccionar tipo de postre -->
-    <div class="form-group">
-        <label for="tipo_postre">Tipo de Postre</label>
-        <select name="tipo_postre" class="input" onchange="this.form.submit()">
-            <option value="">-- Selecciona tipo --</option>
-            {% for tipo in postres.keys %}
-                <option value="{{ tipo }}" {% if postre_seleccionado == tipo %}selected{% endif %}>{{ tipo }}</option>
-            {% endfor %}
-        </select>
-    </div>
+                <div class="form-group">
+                    <label for="tipo_postre">Tipo de Postre</label>
+                    <select name="tipo_postre" class="input" onchange="this.form.submit()">
+                        <option value="">-- Selecciona tipo --</option>
+                        {% for tipo in postres.keys %}
+                            <option value="{{ tipo }}" {% if postre_seleccionado == tipo %}selected{% endif %}>{{ tipo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-    {% if postre_seleccionado %}
-        <!-- Seleccionar tamaño -->
-        <div class="form-group">
-            <label for="tamaño">Tamaño</label>
-            <select name="tamaño" class="input">
-                <option value="">-- Selecciona tamaño --</option>
-                {% for tam in tamaños_postre %}
-                    <option value="{{ tam }}" {% if request.POST.tamaño == tam %}selected{% endif %}>{{ tam }}</option>
-                {% endfor %}
-            </select>
-        </div>
+                {% if postre_seleccionado %}
+                    <div class="form-group">
+                        <label for="tamaño">Tamaño</label>
+                        <select name="tamaño" class="input">
+                            <option value="">-- Selecciona tamaño --</option>
+                            {% for tam in tamaños_postre %}
+                                <option value="{{ tam }}" {% if request.POST.tamaño == tam %}selected{% endif %}>{{ tam }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-        <!-- Seleccionar sabor si aplica -->
-        {% if sabores_postre %}
-        <div class="form-group">
-            <label for="sabor1">Sabor</label>
-            <select name="sabor1" class="input">
-                <option value="">-- Selecciona sabor --</option>
-                {% for s in sabores_postre %}
-                    <option value="{{ s }}" {% if request.POST.sabor1 == s %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        {% endif %}
+                    {% if sabores_postre %}
+                    <div class="form-group">
+                        <label for="sabor1">Sabor</label>
+                        <select name="sabor1" class="input">
+                            <option value="">-- Selecciona sabor --</option>
+                            {% for s in sabores_postre %}
+                                <option value="{{ s }}" {% if request.POST.sabor1 == s %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
 
-        <div class="form-group">
-            <label for="cantidad">Cantidad</label>
-            <input type="number" name="cantidad" min="1" value="1" class="input">
-        </div>
-    {% endif %}
-{% endif %}
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad</label>
+                        <input type="number" name="cantidad" min="1" value="1" class="input">
+                    </div>
+                {% endif %}
+            {% endif %}
 
             <!-- ===== OTROS ===== -->
             {% if categoria_seleccionada == 'Otros' %}
@@ -139,9 +136,12 @@
                     {% else %}
                         {{ p.cantidad }} x {{ p.nombre }}
                     {% endif %}
+                    — ${{ p.precio_unitario }} c/u → <strong>${{ p.subtotal }}</strong>
                 </li>
             {% endfor %}
         </ul>
+
+        <p><strong>Total acumulado:</strong> ${{ total_venta }}</p>
         {% endif %}
     </div>
 </div>

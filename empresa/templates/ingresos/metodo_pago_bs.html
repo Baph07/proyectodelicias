@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>Ingrese la tasa BCV del día</h2>
+        <p>Total en $: {{ venta.total }}</p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="metodo_pago" value="{{ venta.metodo_pago }}">
+            <div class="form-group">
+                <label for="tasa_bcv">Tasa BCV (Bs/$)</label>
+                <input type="number" step="0.01" min="0" name="tasa_bcv" class="input" required>
+            </div>
+            <button type="submit" class="btn btn-success">Confirmar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

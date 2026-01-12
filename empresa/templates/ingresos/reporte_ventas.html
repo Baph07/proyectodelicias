@@ -10,11 +10,36 @@
             <h3>Venta #{{ forloop.counter }} ({{ venta.fecha|date:"d/m/Y H:i" }})</h3>
             <ul>
                 {% for producto in venta.productos.all %}
-                    <li>{{ producto.cantidad }} x {{ producto.tipo_helado }} 
-                        ({{ producto.sabor1 }}{% if producto.sabor2 %}, {{ producto.sabor2 }}{% endif %})
+                    <li>
+                        {{ producto.cantidad }} x
+                        {% if producto.categoria == 'Helados' %}
+                            {{ producto.tipo_helado }} ({{ producto.sabor1 }}{% if producto.sabor2 %}, {{ producto.sabor2 }}{% endif %})
+                        {% elif producto.categoria == 'Postres' %}
+                            {{ producto.tipo_postre }}
+                            {% if producto.tamaño %} ({{ producto.tamaño }}){% endif %}
+                            {% if producto.sabor1 %} ({{ producto.sabor1 }}){% endif %}
+                        {% elif producto.categoria == 'Otros' %}
+                            {{ producto.nombre }}
+                        {% endif %}
+
+                        — ${{ producto.precio_unitario }} c/u
+                        → <strong>${{ producto.subtotal }}</strong>
                     </li>
+
                 {% endfor %}
             </ul>
+
+            <p><strong>Total:</strong> ${{ venta.total }}</p>
+
+            {% if venta.total_bs %}
+                <p><strong>Total en Bs:</strong> {{ venta.total_bs }}</p>
+            {% endif %}
+
+            {% if venta.metodo_pago %}
+                <p><strong>Método de pago:</strong> {{ venta.metodo_pago }}</p>
+            {% endif %}
+
+
         </div>
     {% empty %}
         <p>No hay ventas registradas en este periodo.</p>

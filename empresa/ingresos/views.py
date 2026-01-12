@@ -6,6 +6,9 @@ from datetime import timedelta
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+from decimal import Decimal
+from .utils import obtener_precio_unitario
+from django.shortcuts import get_object_or_404
 
 
 
@@ -21,6 +24,7 @@ def ventas_diarias(request):
     return render(request, 'ingresos/ventas_diarias.html')
 
 # Vista para ingresar venta
+
 @login_required
 def ingresar_venta(request):
     categorias = ['Helados', 'Postres', 'Otros']
@@ -102,10 +106,17 @@ def ingresar_venta(request):
         # Registrar venta completa
         elif 'registrar_venta' in request.POST:
             tipo_venta = request.session.get('tipo_venta', 'contado')
+            nueva_venta = Venta.objects.create(
+                tipo_venta=tipo_venta,
+                total=Decimal('0.00')
+            )
 
-            nueva_venta = Venta.objects.create(tipo_venta=tipo_venta)
-
+            total_venta = Decimal('0.00')
             for p in request.session.get('venta_temp', []):
+                precio_unitario = obtener_precio_unitario(p)
+                subtotal = precio_unitario * p.get('cantidad', 1)
+                total_venta += subtotal
+
                 ProductoVenta.objects.create(
                     venta=nueva_venta,
                     categoria=p['categoria'],
@@ -115,12 +126,32 @@ def ingresar_venta(request):
                     tipo_postre=p.get('tipo_postre'),
                     tamaño=p.get('tamaño'),
                     nombre=p.get('nombre'),
-                    cantidad=p.get('cantidad', 1)
+                    cantidad=p.get('cantidad', 1),
+                    precio_unitario=precio_unitario,
+                    subtotal=subtotal
                 )
+
+            nueva_venta.total = total_venta
+            nueva_venta.save()
 
             request.session['venta_temp'] = []
             request.session.pop('tipo_venta', None)
-            return redirect('ingresos')
+            if tipo_venta == 'contado':
+                    return redirect('seleccionar_metodo_pago', venta_id=nueva_venta.id)
+            else:
+                    # Si es crédito, se va directo al reporte
+                    return redirect('ingresos')
+
+    # --- CALCULAR SUBTOTAL Y TOTAL PARA PRODUCTOS TEMPORALES ---
+    venta_temp_con_precios = []
+    total_venta = Decimal('0.00')
+    for p in request.session.get('venta_temp', []):
+        precio_unitario = obtener_precio_unitario(p)
+        subtotal = precio_unitario * p.get('cantidad', 1)
+        p['precio_unitario'] = precio_unitario
+        p['subtotal'] = subtotal
+        venta_temp_con_precios.append(p)
+        total_venta += subtotal
 
     context = {
         'categorias': categorias,
@@ -135,11 +166,11 @@ def ingresar_venta(request):
         'postre_seleccionado': postre_seleccionado,
         'tamaños_postre': tamaños_postre,
         'sabores_postre': sabores_postre,
-        'venta_temp': request.session.get('venta_temp', [])
+        'venta_temp': venta_temp_con_precios,
+        'total_venta': total_venta
     }
 
     return render(request, 'ingresos/ingresar_venta.html', context)
-
 
 
 def reporte_ventas(request, tipo='diaria'):
@@ -194,3 +225,152 @@ def seleccionar_tipo_venta(request):
 def reporte_deudores(request):
     ventas = Venta.objects.filter(tipo_venta='credito').order_by('-fecha')
     return render(request, 'ingresos/reporte_deudores.html', {'ventas': ventas})
+
+# Vista intermedia para seleccionar método de pago en venta contado
+def seleccionar_metodo_pago(request, venta_id):
+    venta = Venta.objects.get(id=venta_id)
+
+    # Solo aplicable para ventas de contado
+    if venta.tipo_venta != 'contado':
+        return redirect('ingresos')
+
+    if request.method == 'POST':
+        metodo = request.POST.get('metodo_pago')
+        venta.metodo_pago = metodo  # Guardamos la elección
+
+        # Si es Bs, pedimos tasa BCV
+        if metodo in ['Bs efectivo', 'Bs transferencia']:
+            tasa_bcv = request.POST.get('tasa_bcv')
+            if tasa_bcv:
+                venta.total_bs = venta.total * Decimal(tasa_bcv)
+                venta.save()
+                return redirect('confirmar_venta', venta_id=venta.id)
+            else:
+                # Si aún no ingresó la tasa, mostramos el formulario
+                return render(request, 'ingresos/metodo_pago_bs.html', {'venta': venta})
+        else:
+            # Si es dólares, no hacemos conversión
+            venta.save()
+            return redirect('confirmar_venta', venta_id=venta.id)
+
+    return render(request, 'ingresos/metodo_pago.html', {'venta': venta})
+
+
+@login_required
+def confirmar_venta(request, venta_id):
+    """
+    Muestra mensaje de venta registrada exitosamente con botón Continuar
+    """
+    venta = Venta.objects.get(id=venta_id)
+
+    # Revisar si la venta tiene total en Bs
+    total_bs = venta.total_bs if venta.total_bs else None
+
+    # Pasamos 'mensaje_tipo' para que el template distinga entre venta y deuda
+    return render(request, 'ingresos/confirmar_venta.html', {
+        'venta': venta,
+        'total_bs': total_bs,
+        'mensaje_tipo': 'venta'  # 'venta' indica que es venta de contado, no deuda
+    })
+
+
+# Vista para pagar deuda desde reporte de deudores
+@login_required
+def pagar_deuda(request, venta_id):
+    venta = get_object_or_404(Venta, id=venta_id)
+
+    # Solo ventas a crédito
+    if venta.tipo_venta != 'credito':
+        return redirect('reporte_deudores')
+
+    if request.method == 'POST':
+        metodo_pago = request.POST.get('metodo_pago')
+        request.session['metodo_pago'] = metodo_pago
+        request.session['venta_id'] = venta.id
+
+        if metodo_pago in ['Bs efectivo', 'Bs transferencia']:
+            return redirect('tasa_bcv_deuda')
+        else:
+            return redirect('confirmar_pago_deuda')
+
+    return render(request, 'ingresos/metodo_pago.html', {
+        'venta': venta,
+        'tipo': 'deuda'
+    })
+
+
+# Vista para ingresar tasa BCV para deuda
+@login_required
+def tasa_bcv_deuda(request):
+    venta_id = request.session.get('venta_id')
+    venta = get_object_or_404(Venta, id=venta_id)
+
+    if request.method == 'POST':
+        tasa = Decimal(request.POST.get('tasa_bcv', '0'))
+        request.session['tasa_bcv'] = float(tasa) 
+        return redirect('confirmar_pago_deuda')
+
+    return render(request, 'ingresos/metodo_pago_bs.html', {'venta': venta, 'tipo': 'deuda'})
+
+
+# Vista para confirmar pago de deuda
+@login_required
+def confirmar_pago_deuda(request):
+    venta_id = request.session.get('venta_id')
+    venta = get_object_or_404(Venta, id=venta_id)
+    metodo_pago = request.session.get('metodo_pago')
+    total_bs = None
+
+    # Si aplica Bs, obtenemos la tasa
+    if metodo_pago in ['Bs efectivo', 'Bs transferencia']:
+        tasa = Decimal(request.session.get('tasa_bcv', 0))
+        total_bs = venta.total * tasa
+        monto_total = venta.total  # total en $ sigue igual
+    else:
+        tasa = None
+        monto_total = venta.total
+
+    # --- Crear nueva venta de contado para registrar ingreso ---
+    nueva_venta = Venta.objects.create(
+        tipo_venta='contado',
+        total=venta.total,          # total en $
+        metodo_pago=metodo_pago,
+        total_bs=total_bs           # total en Bs si aplica
+    )
+
+    # Copiar productos de la deuda original, ajustando subtotal si se paga en Bs
+    for p in venta.productos.all():
+        if tasa:
+            subtotal_ajustado = p.subtotal * tasa
+        else:
+            subtotal_ajustado = p.subtotal
+
+        ProductoVenta.objects.create(
+            venta=nueva_venta,
+            categoria=p.categoria,
+            tipo_helado=p.tipo_helado,
+            sabor1=p.sabor1,
+            sabor2=p.sabor2,
+            tipo_postre=p.tipo_postre,
+            tamaño=p.tamaño,
+            nombre=p.nombre,
+            cantidad=p.cantidad,
+            precio_unitario=p.precio_unitario,
+            subtotal=subtotal_ajustado
+        )
+
+    # Marcar deuda original como pagada
+    venta.tipo_venta = 'pagada'
+    venta.save()
+
+    # Limpiar sesión
+    request.session.pop('metodo_pago', None)
+    request.session.pop('venta_id', None)
+    request.session.pop('tasa_bcv', None)
+
+    # Renderizar mensaje de confirmación
+    return render(request, 'ingresos/confirmar_venta.html', {
+        'venta': nueva_venta,
+        'total_bs': total_bs,
+        'mensaje_tipo': 'deuda'
+    })

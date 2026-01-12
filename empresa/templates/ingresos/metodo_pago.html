@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>Seleccione método de pago</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="radio" id="usd" name="metodo_pago" value="Dólares efectivo" required>
+            <label for="usd">Dólares efectivo ($)</label><br>
+            <input type="radio" id="bs_efectivo" name="metodo_pago" value="Bs efectivo" required>
+            <label for="bs_efectivo">Bolívares efectivo</label><br>
+            <input type="radio" id="bs_transferencia" name="metodo_pago" value="Bs transferencia" required>
+            <label for="bs_transferencia">Bolívares transferencia</label><br><br>
+            <button type="submit" class="btn btn-primary">Confirmar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
