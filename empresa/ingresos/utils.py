@@ -11,7 +11,8 @@ PRECIOS_HELADOS = {
 }
 
 PRECIOS_POSTRES = {
-    ('Tortas', 'Completa'): Decimal('25.00'),
+    ('Tortas', 'Completa Medio Kilo'): Decimal('12.00'),
+    ('Tortas', 'Completa Kilo'): Decimal('25.00'),
     ('Tortas', 'Porción'): Decimal('3.00'),
     ('Quesillo', 'Completo'): Decimal('20.00'),
     ('Quesillo', 'Porción'): Decimal('3.00'),

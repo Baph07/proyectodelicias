@@ -15,11 +15,11 @@ PRODUCTOS = {
         'Helado 4.4 Litros': ['Chocolate','Fresa','Stracciatella','Torta Suiza','ManteOreo','Ron con Pasas','Tornado','Stracciatella Fresa','Chicle','Samba','Cocosette','Uva']
     },
     'postres': {
-        'Tortas': {'Porción':['Piña','Marmoleada','Arequipe'], 'Completa':['Piña','Marmoleada','Arequipe']},
+        'Tortas': {'Porción':['Piña','Marmoleada','Arequipe'], 'Completa Medio Kilo':['Piña','Marmoleada','Arequipe'], 'Completa Kilo':['Piña','Marmoleada','Arequipe']},
         'Quesillo': {'Porción':[], 'Completo':[]},
         'Yogurt': {'Pequeño':['Griego','Fresa','Piña','Durazno','Ciruela'], 'Mediano':['Griego','Fresa','Piña','Durazno','Ciruela'], 'Grande':['Griego','Fresa','Piña','Durazno','Ciruela']}
     },
-    'otros': ['Refresco litro y medio','Chupeta','Chesito','Q-citos','Caramelo lokiño','Galleta María','Galleta rellena']
+    'otros': ['Cono Barquilla', 'Barquillon','Mini Cesta', 'Cesta','Refresco litro y medio','Chupeta','Chesito','Q-citos','Caramelo lokiño','Galleta María','Galleta rellena']
 }
 
 PRECIOS = {

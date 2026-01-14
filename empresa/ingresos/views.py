@@ -9,6 +9,8 @@ from xhtml2pdf import pisa
 from decimal import Decimal
 from .utils import obtener_precio_unitario
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from inventario.models import Producto
 
 
 
@@ -43,7 +45,7 @@ def ingresar_venta(request):
 
     # Datos para Postres y Otros
     PRODUCTOS_POSTRES = {
-        'Tortas': ['Porción', 'Completa'],
+        'Tortas': ['Porción', 'Completa Medio Kilo', 'Completa Kilo'],
         'Quesillo': ['Porción', 'Completo'],
         'Yogurt': ['Pequeño', 'Mediano', 'Grande']
     }
@@ -106,10 +108,23 @@ def ingresar_venta(request):
         # Registrar venta completa
         elif 'registrar_venta' in request.POST:
             tipo_venta = request.session.get('tipo_venta', 'contado')
+                        # ----------------- 1️⃣ Validar stock -----------------
+            venta_temp = request.session.get('venta_temp', [])
+            for p in venta_temp:
+                if p['categoria'] in ['Postres', 'Otros']:
+                    if not validar_stock_postres_otros(p):
+                        return redirect('ingresar_venta')  # Cancelamos si no hay stock
+
             nueva_venta = Venta.objects.create(
                 tipo_venta=tipo_venta,
                 total=Decimal('0.00')
             )
+
+        # ----------------- 3️⃣ Descontar inventario -----------------
+            for p in venta_temp:
+                if p['categoria'] in ['Postres', 'Otros']:
+                    descontar_stock_postres_otros(p)
+
 
             total_venta = Decimal('0.00')
             for p in request.session.get('venta_temp', []):
@@ -140,7 +155,7 @@ def ingresar_venta(request):
                     return redirect('seleccionar_metodo_pago', venta_id=nueva_venta.id)
             else:
                     # Si es crédito, se va directo al reporte
-                    return redirect('ingresos')
+                      return render(request, 'ingresos/confirmar_venta.html', {'venta': nueva_venta,'mensaje_tipo': 'credito'})
 
     # --- CALCULAR SUBTOTAL Y TOTAL PARA PRODUCTOS TEMPORALES ---
     venta_temp_con_precios = []
@@ -374,3 +389,96 @@ def confirmar_pago_deuda(request):
         'total_bs': total_bs,
         'mensaje_tipo': 'deuda'
     })
+
+   
+def borrar_venta_temp(request):
+    # Limpiar venta temporal
+    request.session['venta_temp'] = []
+    request.session.modified = True
+
+    # Mostrar mensaje de cancelación
+    return render(request, 'ingresos/confirmar_venta.html', {
+        'mensaje_tipo': 'cancelada'
+    })
+
+def eliminar_producto_temp(request, index):
+    venta_temp = request.session.get('venta_temp', [])
+
+    if 0 <= index < len(venta_temp):
+        venta_temp.pop(index)
+        request.session['venta_temp'] = venta_temp
+        request.session.modified = True
+
+    return redirect('ingresar_venta')
+
+from django.contrib import messages
+from inventario.models import Producto
+
+def validar_stock_postres_otros(p):
+    """
+    Valida stock para Postres y Otros. Devuelve (True, None) si hay stock,
+    o (False, mensaje) si no hay suficiente.
+    """
+    cantidad = p['cantidad']
+
+    nombre = (p.get('tipo_postre') or p.get('nombre') or '').strip()
+    tamaño = (p.get('tamaño') or '').strip()
+    sabor = (p.get('sabor1') or '').strip()
+
+    # Buscar producto en inventario
+    if sabor:
+        producto = Producto.objects.filter(
+            nombre__iexact=nombre,
+            categoria__iexact=p['categoria'],
+            tamaño__iexact=tamaño,
+            sabor__iexact=sabor
+        ).first()
+    else:
+        producto = Producto.objects.filter(
+            nombre__iexact=nombre,
+            categoria__iexact=p['categoria'],
+            tamaño__iexact=tamaño,
+            sabor__isnull=True
+        ).first()
+
+    if not producto:
+        mensaje = f"No se encontró el producto {nombre} {tamaño} {sabor}".strip()
+        return False, mensaje
+
+    if producto.stock < cantidad:
+        mensaje = f"No hay stock suficiente de {nombre} {tamaño} {sabor}".strip()
+        return False, mensaje
+
+    return True, None
+
+
+def descontar_stock_postres_otros(p):
+    """
+    Descuenta stock del inventario para Postres y Otros.
+    Asume que ya fue validado previamente.
+    """
+    cantidad = p['cantidad']
+
+    nombre = (p.get('tipo_postre') or p.get('nombre') or '').strip()
+    tamaño = (p.get('tamaño') or '').strip()
+    sabor = (p.get('sabor1') or '').strip()
+
+    # Buscar producto en inventario
+    if sabor:
+        producto = Producto.objects.filter(
+            nombre__iexact=nombre,
+            categoria__iexact=p['categoria'],
+            tamaño__iexact=tamaño,
+            sabor__iexact=sabor
+        ).first()
+    else:
+        producto = Producto.objects.filter(
+            nombre__iexact=nombre,
+            categoria__iexact=p['categoria'],
+            tamaño__iexact=tamaño,
+            sabor__isnull=True
+        ).first()
+
+    if producto:
+        producto.stock -= cantidad
+        producto.save()

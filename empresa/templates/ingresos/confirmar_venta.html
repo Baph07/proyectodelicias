@@ -3,12 +3,19 @@
 {% block content %}
 <div class="form-container">
     <div class="form-card">
+
+        {# ---------- TÍTULO ---------- #}
         {% if mensaje_tipo == 'deuda' %}
             <h2>💳 Deuda pagada exitosamente</h2>
+        {% elif mensaje_tipo == 'credito' %}
+            <h2>🧾 Venta a crédito registrada</h2>
+        {% elif mensaje_tipo == 'cancelada' %}
+            <h2>❌ Venta cancelada</h2>
         {% else %}
             <h2>✅ Venta registrada exitosamente</h2>
         {% endif %}
 
+        {# ---------- MENSAJE ---------- #}
         <p>
             {% if mensaje_tipo == 'deuda' %}
                 {% if total_bs %}
@@ -16,11 +23,17 @@
                 {% else %}
                     Deuda de <strong>{{ venta.total }} $</strong> pagada exitosamente.
                 {% endif %}
+
+            {% elif mensaje_tipo == 'credito' %}
+                Venta registrada en el <strong>reporte de deudores</strong>.
+
+            {% elif mensaje_tipo == 'cancelada' %}
+                <p>La venta fue cancelada y los productos eliminados.</p>
             {% else %}
                 {% if total_bs %}
                     Venta de <strong>{{ total_bs }} Bs</strong> registrada.
                 {% else %}
-                    Venta de <strong>{{ venta.total }} $</strong> en efectivo registrada.
+                    Venta de <strong>{{ venta.total }} $</strong> registrada.
                 {% endif %}
             {% endif %}
         </p>
@@ -28,6 +41,7 @@
         <form method="get" action="{% url 'ingresos' %}">
             <button type="submit" class="btn btn-primary">Continuar</button>
         </form>
+
     </div>
 </div>
 {% endblock %}
