@@ -12,7 +12,15 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from inventario.models import Producto
 
-
+TIPO_HELADO_A_OTROS = {
+    'Barquilla sencilla': 'Cono Barquilla',
+    'Barquilla doble': 'Cono Barquilla',
+    'Barquillon': 'Barquillon',
+    'Mini Cesta': 'Mini Cesta',
+    'Cesta': 'Cesta',
+    'Tina sencilla': 'Vaso tina sencilla',
+    'Tina doble': 'Vaso tina doble'
+}
 
 
 @login_required
@@ -33,7 +41,7 @@ def ingresar_venta(request):
 
     # Datos para Helados
     tipos_helados = [
-        'Barquilla sencilla', 'Barquilla doble', 'Barquillón',
+        'Barquilla sencilla', 'Barquilla doble', 'Barquillon',
         'Mini Cesta', 'Cesta', 'Tina sencilla', 'Tina doble'
     ]
     sabores = [
@@ -55,7 +63,7 @@ def ingresar_venta(request):
         'Yogurt': ['Griego','Fresa','Piña','Durazno','Ciruela']
     }
     PRODUCTOS_OTROS = [
-        'Refresco litro y medio','Chupeta','Chesito','Q-citos','Caramelo lokiño','Galleta María','Galleta rellena'
+        'Refresco_litro_y_medio','Chupeta','Chesito','Q-citos','Caramelo lokiño','Galleta María','Galleta rellena'
     ]
 
     # Inicializar venta temporal en sesión
@@ -108,54 +116,81 @@ def ingresar_venta(request):
         # Registrar venta completa
         elif 'registrar_venta' in request.POST:
             tipo_venta = request.session.get('tipo_venta', 'contado')
-                        # ----------------- 1️⃣ Validar stock -----------------
             venta_temp = request.session.get('venta_temp', [])
+
+            # Validar stock antes de cualquier acción
             for p in venta_temp:
-                if p['categoria'] in ['Postres', 'Otros']:
-                    if not validar_stock_postres_otros(p):
-                        return redirect('ingresar_venta')  # Cancelamos si no hay stock
+                categoria = p['categoria'].lower()
+                if categoria == 'postres':
+                    ok, mensaje = validar_stock_postres(p)
+                elif categoria == 'otros':
+                    ok, mensaje = validar_stock_otros(p)
+                elif categoria == 'helados':
+                    ok, mensaje = validar_stock_helados(p)
+                else:
+                    ok, mensaje = True, None
 
-            nueva_venta = Venta.objects.create(
-                tipo_venta=tipo_venta,
-                total=Decimal('0.00')
-            )
+                if not ok:
+                    messages.error(request, mensaje)
+                    return redirect('ingresar_venta')
 
-        # ----------------- 3️⃣ Descontar inventario -----------------
-            for p in venta_temp:
-                if p['categoria'] in ['Postres', 'Otros']:
-                    descontar_stock_postres_otros(p)
+            # -------------------------------
+            # Ventas de contado → esperar método de pago
+            # -------------------------------
+            if tipo_venta == 'contado':
+                # Guardar venta temporal validada en sesión
+                request.session['venta_temp_validada'] = venta_temp
+                request.session.modified = True
+                return redirect('seleccionar_metodo_pago')
 
-
-            total_venta = Decimal('0.00')
-            for p in request.session.get('venta_temp', []):
-                precio_unitario = obtener_precio_unitario(p)
-                subtotal = precio_unitario * p.get('cantidad', 1)
-                total_venta += subtotal
-
-                ProductoVenta.objects.create(
-                    venta=nueva_venta,
-                    categoria=p['categoria'],
-                    tipo_helado=p.get('tipo_helado'),
-                    sabor1=p.get('sabor1'),
-                    sabor2=p.get('sabor2'),
-                    tipo_postre=p.get('tipo_postre'),
-                    tamaño=p.get('tamaño'),
-                    nombre=p.get('nombre'),
-                    cantidad=p.get('cantidad', 1),
-                    precio_unitario=precio_unitario,
-                    subtotal=subtotal
+            # -------------------------------
+            # Ventas a crédito → registrar directamente
+            # -------------------------------
+            else:
+                nueva_venta = Venta.objects.create(
+                    tipo_venta='credito',
+                    total=Decimal('0.00')
                 )
 
-            nueva_venta.total = total_venta
-            nueva_venta.save()
+                # Descontar inventario
+                for p in venta_temp:
+                    categoria = p['categoria'].lower()
+                    if categoria == 'postres':
+                        descontar_stock_postres(p)
+                    elif categoria == 'otros':
+                        descontar_stock_otros(p)
+                    elif categoria == 'helados':
+                        descontar_stock_helados(p)
 
-            request.session['venta_temp'] = []
-            request.session.pop('tipo_venta', None)
-            if tipo_venta == 'contado':
-                    return redirect('seleccionar_metodo_pago', venta_id=nueva_venta.id)
-            else:
-                    # Si es crédito, se va directo al reporte
-                      return render(request, 'ingresos/confirmar_venta.html', {'venta': nueva_venta,'mensaje_tipo': 'credito'})
+                # Crear productos venta y calcular total
+                total_venta = Decimal('0.00')
+                for p in venta_temp:
+                    precio_unitario = obtener_precio_unitario(p)
+                    subtotal = precio_unitario * p.get('cantidad', 1)
+                    total_venta += subtotal
+                    ProductoVenta.objects.create(
+                        venta=nueva_venta,
+                        categoria=p['categoria'],
+                        tipo_helado=p.get('tipo_helado'),
+                        sabor1=p.get('sabor1'),
+                        sabor2=p.get('sabor2'),
+                        tipo_postre=p.get('tipo_postre'),
+                        tamaño=p.get('tamaño'),
+                        nombre=p.get('nombre'),
+                        cantidad=p.get('cantidad', 1),
+                        precio_unitario=precio_unitario,
+                        subtotal=subtotal
+                    )
+
+                nueva_venta.total = total_venta
+                nueva_venta.save()
+
+                # Limpiar sesión temporal
+                request.session['venta_temp'] = []
+                return render(request, 'ingresos/confirmar_venta.html', {
+                    'venta': nueva_venta,
+                    'mensaje_tipo':'credito'
+                })
 
     # --- CALCULAR SUBTOTAL Y TOTAL PARA PRODUCTOS TEMPORALES ---
     venta_temp_con_precios = []
@@ -242,34 +277,79 @@ def reporte_deudores(request):
     return render(request, 'ingresos/reporte_deudores.html', {'ventas': ventas})
 
 # Vista intermedia para seleccionar método de pago en venta contado
-def seleccionar_metodo_pago(request, venta_id):
-    venta = Venta.objects.get(id=venta_id)
 
-    # Solo aplicable para ventas de contado
-    if venta.tipo_venta != 'contado':
-        return redirect('ingresos')
+@login_required
+def seleccionar_metodo_pago(request):
+    # Obtener venta temporal validada desde sesión
+    venta_temp = request.session.get('venta_temp_validada', [])
+
+    if not venta_temp:
+        messages.error(request, "No hay productos seleccionados para registrar la venta.")
+        return redirect('ingresar_venta')
 
     if request.method == 'POST':
         metodo = request.POST.get('metodo_pago')
-        venta.metodo_pago = metodo  # Guardamos la elección
 
-        # Si es Bs, pedimos tasa BCV
-        if metodo in ['Bs efectivo', 'Bs transferencia']:
-            tasa_bcv = request.POST.get('tasa_bcv')
-            if tasa_bcv:
-                venta.total_bs = venta.total * Decimal(tasa_bcv)
-                venta.save()
-                return redirect('confirmar_venta', venta_id=venta.id)
-            else:
-                # Si aún no ingresó la tasa, mostramos el formulario
-                return render(request, 'ingresos/metodo_pago_bs.html', {'venta': venta})
-        else:
-            # Si es dólares, no hacemos conversión
-            venta.save()
-            return redirect('confirmar_venta', venta_id=venta.id)
+        # Si el método requiere tasa BCV y aún no la ingresó, mostrar formulario
+        if metodo in ['Bs efectivo', 'Bs transferencia'] and 'tasa_bcv' not in request.POST:
+            return render(request, 'ingresos/metodo_pago_bs.html', {'venta_temp': venta_temp, 'metodo': metodo})
 
-    return render(request, 'ingresos/metodo_pago.html', {'venta': venta})
+        # Si llegó aquí, significa que ya se ingresó la tasa o no aplica
+        tasa_bcv = Decimal(request.POST.get('tasa_bcv', '1'))  # 1 para no multiplicar si no hay tasa
 
+        # Calcular total
+        total_venta = Decimal('0.00')
+        for p in venta_temp:
+            precio_unitario = obtener_precio_unitario(p)
+            subtotal = precio_unitario * p.get('cantidad', 1)
+            total_venta += subtotal
+
+        # Crear venta
+        nueva_venta = Venta.objects.create(
+            tipo_venta='contado',
+            total=total_venta,
+            metodo_pago=metodo,
+            total_bs=(total_venta * tasa_bcv) if metodo in ['Bs efectivo', 'Bs transferencia'] else None
+        )
+
+        # -------------------------------
+        # Descontar inventario solo al registrar
+        # -------------------------------
+        for p in venta_temp:
+            categoria = p['categoria'].lower()
+            if categoria == 'postres':
+                descontar_stock_postres(p)
+            elif categoria == 'otros':
+                descontar_stock_otros(p)
+            elif categoria == 'helados':
+                descontar_stock_helados(p)
+
+        # Crear ProductoVenta
+        for p in venta_temp:
+            precio_unitario = obtener_precio_unitario(p)
+            subtotal = precio_unitario * p.get('cantidad', 1)
+            ProductoVenta.objects.create(
+                venta=nueva_venta,
+                categoria=p['categoria'],
+                tipo_helado=p.get('tipo_helado'),
+                sabor1=p.get('sabor1'),
+                sabor2=p.get('sabor2'),
+                tipo_postre=p.get('tipo_postre'),
+                tamaño=p.get('tamaño'),
+                nombre=p.get('nombre'),
+                cantidad=p.get('cantidad', 1),
+                precio_unitario=precio_unitario,
+                subtotal=subtotal
+            )
+
+        # Limpiar sesión
+        request.session.pop('venta_temp_validada', None)
+        request.session['venta_temp'] = []
+
+        return redirect('confirmar_venta', venta_id=nueva_venta.id)
+
+    # GET: mostrar formulario de método de pago
+    return render(request, 'ingresos/metodo_pago.html', {'venta_temp': venta_temp})
 
 @login_required
 def confirmar_venta(request, venta_id):
@@ -281,11 +361,11 @@ def confirmar_venta(request, venta_id):
     # Revisar si la venta tiene total en Bs
     total_bs = venta.total_bs if venta.total_bs else None
 
-    # Pasamos 'mensaje_tipo' para que el template distinga entre venta y deuda
+    # Pasamos 'mensaje_tipo' para que el template distinga entre venta de contado, crédito o deuda
     return render(request, 'ingresos/confirmar_venta.html', {
         'venta': venta,
         'total_bs': total_bs,
-        'mensaje_tipo': 'venta'  # 'venta' indica que es venta de contado, no deuda
+        'mensaje_tipo': 'venta'  # contado/venta finalizada
     })
 
 
@@ -410,75 +490,143 @@ def eliminar_producto_temp(request, index):
         request.session.modified = True
 
     return redirect('ingresar_venta')
-
-from django.contrib import messages
-from inventario.models import Producto
-
-def validar_stock_postres_otros(p):
-    """
-    Valida stock para Postres y Otros. Devuelve (True, None) si hay stock,
-    o (False, mensaje) si no hay suficiente.
-    """
+def validar_stock_postres(p):
     cantidad = p['cantidad']
 
-    nombre = (p.get('tipo_postre') or p.get('nombre') or '').strip()
+    nombre = (p.get('tipo_postre') or '').strip()
     tamaño = (p.get('tamaño') or '').strip()
     sabor = (p.get('sabor1') or '').strip()
 
-    # Buscar producto en inventario
-    if sabor:
-        producto = Producto.objects.filter(
-            nombre__iexact=nombre,
-            categoria__iexact=p['categoria'],
-            tamaño__iexact=tamaño,
-            sabor__iexact=sabor
-        ).first()
-    else:
-        producto = Producto.objects.filter(
-            nombre__iexact=nombre,
-            categoria__iexact=p['categoria'],
-            tamaño__iexact=tamaño,
-            sabor__isnull=True
-        ).first()
+    producto = Producto.objects.filter(
+        nombre__iexact=nombre,
+        categoria='postres',
+        tamaño__iexact=tamaño,
+        sabor__iexact=sabor
+    ).first()
 
     if not producto:
-        mensaje = f"No se encontró el producto {nombre} {tamaño} {sabor}".strip()
-        return False, mensaje
+        return False, f"No se encontró el postre {nombre} {tamaño} {sabor}, por favor ingrese solo productos existentes en el inventario"
 
     if producto.stock < cantidad:
-        mensaje = f"No hay stock suficiente de {nombre} {tamaño} {sabor}".strip()
-        return False, mensaje
+        return False, f"No hay stock suficiente de {nombre} {tamaño} {sabor}, por favor ingrese solo productos existentes en el inventario"
 
     return True, None
 
-
-def descontar_stock_postres_otros(p):
-    """
-    Descuenta stock del inventario para Postres y Otros.
-    Asume que ya fue validado previamente.
-    """
+def descontar_stock_postres(p):
     cantidad = p['cantidad']
 
-    nombre = (p.get('tipo_postre') or p.get('nombre') or '').strip()
+    nombre = (p.get('tipo_postre') or '').strip()
     tamaño = (p.get('tamaño') or '').strip()
     sabor = (p.get('sabor1') or '').strip()
 
-    # Buscar producto en inventario
-    if sabor:
-        producto = Producto.objects.filter(
-            nombre__iexact=nombre,
-            categoria__iexact=p['categoria'],
-            tamaño__iexact=tamaño,
-            sabor__iexact=sabor
-        ).first()
-    else:
-        producto = Producto.objects.filter(
-            nombre__iexact=nombre,
-            categoria__iexact=p['categoria'],
-            tamaño__iexact=tamaño,
-            sabor__isnull=True
-        ).first()
+    producto = Producto.objects.filter(
+        nombre__iexact=nombre,
+        categoria='postres',
+        tamaño__iexact=tamaño,
+        sabor__iexact=sabor
+    ).first()
 
     if producto:
         producto.stock -= cantidad
         producto.save()
+
+def validar_stock_otros(p):
+    cantidad = p['cantidad']
+    nombre = (p.get('nombre') or '').strip()
+
+    producto = Producto.objects.filter(
+        nombre__iexact=nombre,
+        categoria='otros'
+    ).first()
+
+    if not producto:
+        return False, f"No se encontró el producto {nombre}, por favor ingrese solo productos existentes en el inventario"
+
+    if producto.stock < cantidad:
+        return False, f"No hay stock suficiente de {nombre}, por favor ingrese solo productos existentes en el inventario"
+
+    return True, None
+
+def descontar_stock_otros(p):
+    cantidad = p['cantidad']
+    nombre = (p.get('nombre') or '').strip()
+
+    producto = Producto.objects.filter(
+        nombre__iexact=nombre,
+        categoria='otros'
+    ).first()
+
+    if producto:
+        producto.stock -= cantidad
+        producto.save()
+
+def validar_stock_helados(p):
+    """
+    Valida que los sabores y el tipo de helado existan en inventario y tengan stock suficiente.
+    """
+    cantidad = p['cantidad']
+    sabores = [p.get('sabor1'), p.get('sabor2')]
+    sabores = [s for s in sabores if s]
+
+    # 1️⃣ Validar sabores
+    for sabor in sabores:
+        producto = Producto.objects.filter(
+            categoria='helados',
+            sabor__iexact=sabor
+        ).first()
+
+        if not producto:
+            return False, f"No se encontró el helado con sabor {sabor} en inventario"
+
+        if producto.stock < cantidad:
+            return False, f"No hay stock suficiente de helado sabor {sabor} (disponible {producto.stock})"
+
+    # 2️⃣ Validar tipo/envase en inventario Otros
+    tipo = p.get('tipo_helado')
+    nombre_otro = TIPO_HELADO_A_OTROS.get(tipo)
+    if nombre_otro:
+        producto_otro = Producto.objects.filter(
+            categoria='otros',
+            nombre__iexact=nombre_otro
+        ).first()
+        if not producto_otro:
+            return False, f"No se encontró el producto {nombre_otro} en inventario (tipo de helado)"
+        if producto_otro.stock < cantidad:
+            return False, f"No hay stock suficiente de {nombre_otro} (disponible {producto_otro.stock})"
+
+    return True, None
+
+def descontar_stock_helados(p):
+    """
+    Descuenta la cantidad de porciones correspondiente a los sabores de helado vendidos
+    y el tipo de envase correspondiente.
+    """
+    cantidad = p['cantidad']
+    sabores = [p.get('sabor1'), p.get('sabor2')]
+    sabores = [s for s in sabores if s]
+
+    # 1️⃣ Descontar sabores
+    for sabor in sabores:
+        producto = Producto.objects.filter(
+            categoria='helados',
+            sabor__iexact=sabor
+        ).first()
+        if producto:
+            producto.stock -= cantidad
+            if producto.stock < 0:
+                producto.stock = 0
+            producto.save()
+
+    # 2️⃣ Descontar tipo/envase en inventario Otros
+    tipo = p.get('tipo_helado')
+    nombre_otro = TIPO_HELADO_A_OTROS.get(tipo)
+    if nombre_otro:
+        producto_otro = Producto.objects.filter(
+            categoria='otros',
+            nombre__iexact=nombre_otro
+        ).first()
+        if producto_otro:
+            producto_otro.stock -= cantidad
+            if producto_otro.stock < 0:
+                producto_otro.stock = 0
+            producto_otro.save()

@@ -22,7 +22,7 @@ PRECIOS_POSTRES = {
 }
 
 PRECIOS_OTROS = {
-    'Refresco litro y medio': Decimal('1.80'),
+    'Refresco_litro_y_medio': Decimal('1.80'),
     'Chupeta': Decimal('0.18'),
     'Chesito': Decimal('0.20'),
     'Q-citos': Decimal('0.30'),

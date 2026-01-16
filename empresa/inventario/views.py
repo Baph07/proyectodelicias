@@ -19,7 +19,7 @@ PRODUCTOS = {
         'Quesillo': {'Porción':[], 'Completo':[]},
         'Yogurt': {'Pequeño':['Griego','Fresa','Piña','Durazno','Ciruela'], 'Mediano':['Griego','Fresa','Piña','Durazno','Ciruela'], 'Grande':['Griego','Fresa','Piña','Durazno','Ciruela']}
     },
-    'otros': ['Cono Barquilla', 'Barquillon','Mini Cesta', 'Cesta','Refresco litro y medio','Chupeta','Chesito','Q-citos','Caramelo lokiño','Galleta María','Galleta rellena']
+    'otros': ['Cono Barquilla', 'Barquillon','Mini Cesta', 'Cesta','Vaso Tina Sencilla','Vaso Tina Doble','Refresco_litro_y_medio','Chupeta','Chesito','Q-citos','Caramelo lokiño','Galleta María','Galleta rellena']
 }
 
 PRECIOS = {

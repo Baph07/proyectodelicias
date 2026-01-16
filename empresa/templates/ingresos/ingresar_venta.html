@@ -1,6 +1,15 @@
     {% extends "base.html" %}
 
     {% block content %}
+
+        {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger">
+        {{ message }}
+        </div>
+    {% endfor %}
+    {% endif %}
+
     <div class="form-container">
         <div class="form-card">
             <h2>Ingresar Venta</h2>
